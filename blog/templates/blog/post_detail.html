@@ -1,0 +1,387 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="reading-progress">
+    <div class="reading-progress-bar"></div>
+</div>
+
+<div class="article-container">
+    <aside class="table-of-contents-sidebar" id="toc-sidebar">
+        <div class="toc-sticky">
+            <h3>Contenido</h3>
+            <ul id="toc-list"></ul>
+        </div>
+    </aside>
+
+    <article class="post-detail">
+        <header class="post-header">
+            <div class="post-meta">
+                <time datetime="{{ post.created_at|date:'Y-m-d' }}">{{ post.created_at|date:"d M Y" }}</time>
+                <span class="reading-time">5 min de lectura</span>
+            </div>
+            <h1 class="post-title">{{ post.title }}</h1>
+            {% if post.excerpt %}
+            <p class="post-excerpt">{{ post.excerpt }}</p>
+            {% endif %}
+        </header>
+
+        <div class="content article-content" id="article-content">
+            {{ post.content|safe }}
+        </div>
+
+    <footer class="post-footer">
+        <div class="post-tags">
+            <span class="tag">Tutorial</span>
+            <span class="tag">Desarrollo</span>
+            <span class="tag">Guía</span>
+        </div>
+
+        <div class="post-navigation">
+            <a href="#" class="nav-link prev">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Artículo anterior
+            </a>
+            <a href="{% url 'post_list' %}" class="nav-link home">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                Todos los artículos
+            </a>
+            <a href="#" class="nav-link next">
+                Siguiente artículo
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+        </div>
+
+        <div class="author-card">
+            <div class="author-avatar">
+                <img src="https://via.placeholder.com/60x60/0466c8/ffffff?text=W" alt="Williams" />
+            </div>
+            <div class="author-info">
+                <h4>Williams</h4>
+                <p>Desarrollador web apasionado por la tecnología y la ciberseguridad. Compartiendo conocimientos y experiencias en este blog personal.</p>
+                <div class="author-links">
+                    <a href="https://iamwillzero.github.io/myWeb/" target="_blank">Portafolio</a>
+                    <a href="mailto:contacto@williams.dev">Contacto</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</article>
+
+<script>
+// Table of Contents Generation
+document.addEventListener('DOMContentLoaded', function() {
+    const content = document.getElementById('article-content');
+    const tocList = document.getElementById('toc-list');
+    const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+    if (headings.length > 3) { // Only show TOC if there are enough headings
+        headings.forEach((heading, index) => {
+            const level = parseInt(heading.tagName.charAt(1));
+            const text = heading.textContent;
+            const id = `heading-${index}`;
+
+            heading.id = id;
+
+            const li = document.createElement('li');
+            li.className = `toc-level-${level}`;
+            li.innerHTML = `<a href="#${id}">${text}</a>`;
+
+            tocList.appendChild(li);
+        });
+    } else {
+        document.getElementById('toc').style.display = 'none';
+    }
+});
+
+// Reading Progress
+window.addEventListener('scroll', function() {
+    const scrollTop = window.pageYOffset;
+    const docHeight = document.body.offsetHeight - window.innerHeight;
+    const scrollPercent = (scrollTop / docHeight) * 100;
+
+    document.querySelector('.reading-progress-bar').style.width = scrollPercent + '%';
+});
+
+// Smooth scrolling for TOC links
+document.addEventListener('click', function(e) {
+    if (e.target.matches('.table-of-contents a')) {
+        e.preventDefault();
+        const target = document.querySelector(e.target.getAttribute('href'));
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+});
+</script>
+
+<style>
+.reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    z-index: 1000;
+}
+
+.reading-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), #0353a4);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.post-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.post-meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 1rem;
+    color: var(--muted-foreground);
+    font-size: 0.9rem;
+}
+
+.reading-time {
+    background: var(--accent);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+.post-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 1rem 0;
+    line-height: 1.2;
+    color: var(--foreground);
+}
+
+.post-excerpt {
+    font-size: 1.25rem;
+    color: var(--muted-foreground);
+    margin: 1.5rem 0;
+    font-style: italic;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.article-container {
+    display: flex;
+    gap: 3rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.table-of-contents-sidebar {
+    flex: 0 0 280px;
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
+}
+
+.toc-sticky {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.toc-sticky h3 {
+    margin-top: 0;
+    font-size: 1.1rem;
+    color: var(--foreground);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.5rem;
+}
+
+.toc-sticky ul {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0 0;
+}
+
+.toc-sticky li {
+    margin: 0.5rem 0;
+}
+
+.toc-sticky a {
+    color: var(--muted-foreground);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    display: block;
+    padding: 0.25rem 0;
+    border-radius: 4px;
+    padding-left: 0.5rem;
+}
+
+.toc-sticky a:hover {
+    color: var(--primary);
+    background: var(--accent);
+}
+
+.toc-level-2 { padding-left: 1rem; }
+.toc-level-3 { padding-left: 2rem; }
+.toc-level-4 { padding-left: 3rem; }
+
+.post-detail {
+    flex: 1;
+    min-width: 0;
+}
+
+.post-footer {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+.post-tags {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.tag {
+    background: var(--accent);
+    color: var(--accent-foreground);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.post-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 3rem 0;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted-foreground);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nav-link:hover {
+    color: var(--primary);
+}
+
+.nav-link.home {
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.author-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    margin-top: 3rem;
+}
+
+.author-avatar img {
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+}
+
+.author-info h4 {
+    margin: 0 0 0.5rem 0;
+    color: var(--foreground);
+}
+
+.author-info p {
+    margin: 0 0 1rem 0;
+    color: var(--muted-foreground);
+    font-size: 0.9rem;
+}
+
+.author-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.author-links a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.author-links a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 1024px) {
+    .article-container {
+        gap: 2rem;
+    }
+
+    .table-of-contents-sidebar {
+        flex: 0 0 240px;
+    }
+}
+
+@media (max-width: 768px) {
+    .article-container {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .table-of-contents-sidebar {
+        order: -1;
+        flex: none;
+        position: static;
+        margin-bottom: 2rem;
+    }
+
+    .toc-sticky {
+        position: static;
+        box-shadow: none;
+        border: 1px solid var(--border);
+    }
+
+    .post-title {
+        font-size: 2rem;
+    }
+
+    .post-navigation {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .author-card {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
